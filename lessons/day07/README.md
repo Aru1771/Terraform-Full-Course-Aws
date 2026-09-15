@@ -20,6 +20,13 @@
 4. **tuple([type1, type2, ...])** - Ordered collection with specific types for each element
 5. **object({key1=type1, key2=type2, ...})** - Structured data with named attributes
 
+   | Data type      | Recommended | Access                   |
+| -------------- | ----------- | ------------------------ |
+| `list(string)` | `count`     | `count.index`            |
+| `set(string)`  | `for_each`  | `each.value`             |
+| `map(string)`  | `for_each`  | `each.key`, `each.value` |
+
+
 
 ### Common Type Patterns
 
