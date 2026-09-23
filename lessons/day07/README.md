@@ -19,6 +19,23 @@
 3. **map(type)** - Key-value pairs with string keys
 4. **tuple([type1, type2, ...])** - Ordered collection with specific types for each element
 5. **object({key1=type1, key2=type2, ...})** - Structured data with named attributes
+6. **Nested Object**
+
+          variable "application" {
+          type = object({
+            name = string
+        
+            deployment = object({
+              environment = string
+              replicas    = number
+            })
+          })
+        }
+if we required we will add one more object after the deployment object.
+
+Access environment
+
+        var.application.deployment.environment
 
                            | Data type      | Recommended | Access                   |
                         | -------------- | ----------- | ------------------------ |
