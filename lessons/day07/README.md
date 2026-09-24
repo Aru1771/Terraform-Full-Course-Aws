@@ -32,16 +32,20 @@
           })
         }
 
-            variable "application" {
-             type = object({
-               name = string
-           
-               deployment = object({
-                 environment = string
-                 replicas    = number
-               })
-             })
-           }
+            application = {
+            name = "Empower"
+          
+            deployment = {
+              environment = "prod"
+              replicas    = 3
+              port        = 8080
+            }
+          
+            monitoring = {
+              enabled = true
+              path    = "/health"
+            }
+          }
 if we required we will add one more object after the deployment object.
 
 Access environment
