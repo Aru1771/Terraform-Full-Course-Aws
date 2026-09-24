@@ -21,7 +21,7 @@
 5. **object({key1=type1, key2=type2, ...})** - Structured data with named attributes
 6. **Nested Object**
 
-          variable "application" {
+          variable "application" {           
           type = object({
             name = string
         
@@ -31,6 +31,17 @@
             })
           })
         }
+
+            variable "application" {
+             type = object({
+               name = string
+           
+               deployment = object({
+                 environment = string
+                 replicas    = number
+               })
+             })
+           }
 if we required we will add one more object after the deployment object.
 
 Access environment
