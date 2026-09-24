@@ -56,14 +56,74 @@ Acess enabled
 
         var.application.monitoring.enabled
 
-                           | Data type      | Recommended | Access                   |
-                        | -------------- | ----------- | ------------------------ |
-                        | `list(string)` | `count`     | `count.index`            |
-                        | `set(string)`  | `for_each`  | `each.value`             |
-                        | `map(string)`  | `for_each`  | `each.key`, `each.value` |
+
+7. **Complex Type Combinations**
+
+A complex type combination means combining multiple Terraform data types together.
+
+Syntax
+
+                    variable "applications" {
+                      type = list(object({
+                        name = string
+                    
+                        deployment = object({
+                          environment = string
+                          replicas    = number
+                        })
+                    
+                        monitoring = object({
+                          enabled = bool
+                        })
+                      }))
+                    }
+       
+                    list
+                     └── object
+                          ├── name → string
+                          │
+                          ├── deployment → object
+                          │    ├── environment → string
+                          │    └── replicas → number
+                          │
+                          └── monitoring → object
+                               └── enabled → bool
+
+                               applications = [
+                                {
+                                  name = "payment"
+                              
+                                  deployment = {
+                                    environment = "prod"
+                                    replicas    = 3
+                                  }
+                              
+                                  monitoring = {
+                                    enabled = true
+                                  }
+                                },
+                              
+                                {
+                                  name = "user-service"
+                              
+                                  deployment = {
+                                    environment = "stage"
+                                    replicas    = 2
+                                  }
+                              
+                                  monitoring = {
+                                    enabled = true
+                                  }
+                                }
+                              ]   
 
 
+# By using the blue print which we have mentioned in the var.tf file we can create n number of list of objects with nested objects. we are sperating objects with "," in the tfvars file.
 
+we access the values:
+
+            var.applications[0].name
+ 
 ### Common Type Patterns
 
 1. **Environment-specific configurations**
