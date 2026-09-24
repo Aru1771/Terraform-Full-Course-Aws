@@ -52,6 +52,10 @@ Access environment
 
         var.application.deployment.environment
 
+Acess enabled
+
+        var.application.monitoring.enabled
+
                            | Data type      | Recommended | Access                   |
                         | -------------- | ----------- | ------------------------ |
                         | `list(string)` | `count`     | `count.index`            |
