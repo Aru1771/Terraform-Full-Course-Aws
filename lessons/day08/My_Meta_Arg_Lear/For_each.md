@@ -49,5 +49,12 @@ The mechanisam of for_each:
     for value prod --> it will create one resource
     for value stage --> it will create one resource
 
+What is each.value?
+-------------------
+
+each.value means:
+
+          The current value being processed by for_each.
+
 for each value in the set it will create one resource.
 
