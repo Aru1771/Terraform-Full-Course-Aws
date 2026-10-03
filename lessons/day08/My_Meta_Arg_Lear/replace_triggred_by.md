@@ -240,3 +240,36 @@ then:
     CREATE NEW
          ↓
     DESTROY OLD
+
+
+Actual code:
+-----------
+
+            resource "aws_security_group" "my_sg" {
+                name = "app_sg"
+            
+            }
+            
+            resource "aws_instance" "my_instance" {
+                ami = var.ami_id
+                instance_type = var.instance_type
+                for_each = var.applications
+            
+                lifecycle {
+                    create_before_destroy = true
+                    
+                    replace_triggered_by =  [
+                        aws_security_group.my_sg
+                    ]
+                    
+                }
+            
+                tags = {
+                    Name = "${each.key}-${var.instance_name}"
+                    environment = each.value.environment
+                    port = each.value.port
+                }
+            }
+
+
+
