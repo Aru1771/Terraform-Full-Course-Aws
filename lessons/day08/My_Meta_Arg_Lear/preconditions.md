@@ -366,3 +366,44 @@ each.value.port
 Hint:
 
     condition = each.value.port >= 1 && each.value.port <= 65535
+
+Task:
+
+         resource "aws_security_group" "my_sg" {
+             name = "app_sg"
+         
+         }
+         
+         resource "aws_instance" "my_instance" {
+             ami = var.ami_id
+             instance_type = var.instance_type
+             for_each = var.applications
+         
+             lifecycle {
+                 create_before_destroy = true
+                 
+                 replace_triggered_by =  [
+                     aws_security_group.my_sg
+                 ]
+         
+                 precondition {
+                     condition = each.value.port >= 1 && each.value.port <= 65535
+                     error_message = "Port number must be between 1 and 65535"
+                 }
+         
+                 postcondition {
+                     condition = self.instance_type != ""
+                     error_message = "Instance type must not be empty"
+                 }
+                 
+             }
+         
+             tags = {
+                 Name = "${each.key}-${var.instance_name}"
+                 environment = each.value.environment
+                 port = each.value.port
+             }
+         }
+         
+         
+         
