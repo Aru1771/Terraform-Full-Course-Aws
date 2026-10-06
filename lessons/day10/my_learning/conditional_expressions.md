@@ -335,3 +335,97 @@ order   → NON-PROD
 
 Your task
 Write the complete aws_instance resource yourself.
+
+
+Task:
+
+main.tf:
+
+resource "aws_security_group" "my_sg" {
+    name = "app_sg"
+
+}
+
+        resource "aws_instance" "my_instance" {
+            ami = var.ami_id
+            instance_type = each.value.environment == "prod" ? "t3.mediam" : each.value.environment == "dev" ? "t3.micro" : "t3.small"  
+            for_each = var.applications
+        
+            lifecycle {
+                create_before_destroy = true
+                
+                replace_triggered_by =  [
+                    aws_security_group.my_sg
+                ]
+        
+                precondition {
+                    condition = each.value.port >= 1 && each.value.port <= 65535
+                    error_message = "Port number must be between 1 and 65535"
+                }
+        
+                postcondition {
+                    condition = self.instance_type != ""
+                    error_message = "Instance type must not be empty"
+                }
+                
+            }
+        
+            tags = {
+                Name = "${each.key}-${var.instance_name}"
+                environment = each.value.environment
+                port = each.value.port
+                deployment_tag = each.value.environment == "prod" ? "Prod" : "NON-PROD"
+            }
+        }
+
+
+Variable.tf:
+
+        variable "ami_id" {
+            type = string 
+        }
+        
+        variable "instance_type" {
+            type = string
+        }
+        
+        variable "instance_name" {
+            type = string
+        }
+        
+        variable "applications" {
+            type = map(object({
+                environment = string
+                port = number
+        
+            }))
+        }
+
+tfvars.tf
+
+
+    ami_id = "ami-0ff8a91507f77f867"
+    
+    instance_type = ""
+    
+    instance_name = "server"
+    
+    applications = {
+    
+        payment = {
+            environment = "prod",
+            port = 8080
+        },
+    
+        users = {
+            environment = "stage",
+            port = 8081
+        },
+    
+        order = {
+            environment = "dev",
+            port = 8082
+        }
+    
+    }
+    
