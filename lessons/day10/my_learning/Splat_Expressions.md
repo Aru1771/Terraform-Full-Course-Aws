@@ -193,3 +193,66 @@ So you could write:
 We'll practice this distinction because it is very useful in real Terraform code.
 Splat expressions work directly with lists, sets, and tuples. for_each creates a map of resources, 
 so you normally cannot use the simple resource.*.attribute splat syntax directly on a for_each resource.
+
+
+TASK:
+
+main.tf
+
+    resource "aws_instance" "prod" {
+    
+        for_each = var.instances
+    
+        ami = each.value.ami_id
+        instance_type = each.value.tags["environment"] == "prod" ? "t2.large" : each.value.tags["environment"] == "stage" ? "t2.medium" : "t2.small"
+    
+        availability_zone = each.value.az
+    
+    
+        root_block_device {
+          volume_size = each.value.vs
+    
+        }
+    
+        tags = each.value.tags
+      
+    }
+
+var.tf
+
+    variable "instances" {
+        type = map(object({
+            ami_id = string
+            az = string
+            vs = number
+    
+            tags = map(string)
+        }))
+      
+    }
+
+tfvars
+
+    instances = {
+      "instance_1" = {
+        ami_id = "ami-0ff8a91507f77f867"
+        az = "us-east-1a"
+        vs = 10
+    
+        tags = {
+            Name = "Emp_prod_instance"
+            environment = "prod"
+        }
+      },
+    
+      "instance_2" = {
+        ami_id = "ami-0ff8a91507f77f867"
+        az = "us-east-1b"
+        vs = 10
+    
+        tags = {
+            Name = "Emp-stage-instance"
+            environment = "stage"
+        }
+      }
+    }
