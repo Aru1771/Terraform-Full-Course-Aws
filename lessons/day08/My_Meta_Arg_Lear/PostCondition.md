@@ -29,69 +29,82 @@ If it fails:
 
 2. Syntax
 A postcondition is also placed inside lifecycle:
-resource "aws_instance" "app" {
 
-  ami           = var.ami_id
-  instance_type = var.instance_type
-
-  lifecycle {
-
-    postcondition {
-      condition     = self.instance_type == "t3.micro"
-      error_message = "Instance type must be t3.micro."
-    }
-
-  }
-}
+        resource "aws_instance" "app" {
+        
+          ami           = var.ami_id
+          instance_type = var.instance_type
+        
+          lifecycle {
+        
+            postcondition {
+              condition     = self.instance_type == "t3.micro"
+              error_message = "Instance type must be t3.micro."
+            }
+        
+          }
+        }
 
 Notice this:
-self.instance_type
+
+        self.instance_type
 
 Why self?
+
 self refers to the current resource.
 So:
-self.instance_type
+
+        self.instance_type
 
 means:
-"The instance_type of this resource."
+
+        "The instance_type of this resource."
 
 3. Precondition vs Postcondition
+
 This is the most important concept.
+
 Precondition
+
 Checks before Terraform performs the operation.
-Input/configuration
-      ↓
-Precondition
-      ↓
-Create/Update
+
+        Input/configuration
+              ↓
+        Precondition
+              ↓
+        Create/Update
 
 Postcondition
+
 Checks after Terraform performs the operation.
-Create/Update
-      ↓
-Postcondition
-      ↓
-Validate result
+
+        Create/Update
+              ↓
+        Postcondition
+              ↓
+        Validate result
 
 Easy memory
+
 PRE  → BEFORE
 POST → AFTER
 
 4. Simple example
-resource "aws_instance" "app" {
-
-  ami           = var.ami_id
-  instance_type = "t3.micro"
-
-  lifecycle {
-
-    postcondition {
-      condition     = self.instance_type == "t3.micro"
-      error_message = "The EC2 instance must use t3.micro."
-    }
-
-  }
-}
+   
+        resource "aws_instance" "app" {
+        
+          ami           = var.ami_id
+          instance_type = "t3.micro"
+        
+          lifecycle {
+        
+            postcondition {
+              condition     = self.instance_type == "t3.micro"
+              error_message = "The EC2 instance must use t3.micro."
+            }
+        
+          }
+        }
 
 Terraform creates/updates the resource and then checks:
 self.instance_type == "t3.micro"
@@ -103,98 +116,116 @@ If false:
 ❌ Postcondition failed
 
 5. Why is this useful?
+   
 Imagine Terraform configuration looks correct, but the actual value returned by the provider is not what you expect.
+
 A postcondition allows you to say:
-"After Terraform creates this resource, verify that the result satisfies this requirement."
+
+        "After Terraform creates this resource, verify that the result satisfies this requirement."
 
 This is useful for validating important infrastructure properties.
+
 6. Real DevOps example
+
 Suppose your application requires a resource to be deployed in a specific environment.
-resource "aws_instance" "app" {
 
-  ami           = var.ami_id
-  instance_type = var.instance_type
-
-  tags = {
-    Environment = var.environment
-  }
-
-  lifecycle {
-
-    postcondition {
-      condition     = self.tags["Environment"] == "prod"
-      error_message = "The application must be deployed with Environment=prod."
-    }
-
-  }
-}
+        resource "aws_instance" "app" {
+        
+          ami           = var.ami_id
+          instance_type = var.instance_type
+        
+          tags = {
+            Environment = var.environment
+          }
+        
+          lifecycle {
+        
+            postcondition {
+              condition     = self.tags["Environment"] == "prod"
+              error_message = "The application must be deployed with Environment=prod."
+            }
+        
+          }
+        }
 
 After the resource is created, Terraform checks:
-Actual resource
-      ↓
-Environment tag
-      ↓
-Is it "prod"?
-      ↓
-YES → ✅
-NO  → ❌
+
+        Actual resource
+              ↓
+        Environment tag
+              ↓
+        Is it "prod"?
+              ↓
+        YES → ✅
+        NO  → ❌
 
 7. self vs each.value
+
 Since you've already learned for_each, this is important.
+
 Suppose:
-for_each = var.applications
+
+        for_each = var.applications
 
 Your input is:
-payment → prod → 8080
-user    → dev  → 8081
-order   → stage → 8082
+
+        payment → prod → 8080
+        user    → dev  → 8081
+        order   → stage → 8082
 
 each.value
+
 Represents the input configuration:
-each.value.port
+
+        each.value.port
 
 means:
 The port specified in my var.applications.
 
 self
 Represents the current resource:
-self.instance_type
+
+        self.instance_type
 
 means:
-The instance type of the resource being checked.
+
+        The instance type of the resource being checked.
 
 Think:
-each.value
-    ↓
-Input
 
-self
-    ↓
-Current resource
+        each.value
+            ↓
+        Input
+        
+        self
+            ↓
+        Current resource
 
 8. Precondition + Postcondition together
+
 You can use both.
-resource "aws_instance" "app" {
 
-  for_each = var.applications
-
-  ami           = var.ami_id
-  instance_type = var.instance_type
-
-  lifecycle {
-
-    precondition {
-      condition     = each.value.port >= 1 && each.value.port <= 65535
-      error_message = "Port must be between 1 and 65535."
-    }
-
-    postcondition {
-      condition     = self.instance_type != ""
-      error_message = "Instance type must be configured."
-    }
-
-  }
-}
+        resource "aws_instance" "app" {
+        
+          for_each = var.applications
+        
+          ami           = var.ami_id
+          instance_type = var.instance_type
+        
+          lifecycle {
+        
+            precondition {
+              condition     = each.value.port >= 1 && each.value.port <= 65535
+              error_message = "Port must be between 1 and 65535."
+            }
+        
+            postcondition {
+              condition     = self.instance_type != ""
+              error_message = "Instance type must be configured."
+            }
+        
+          }
+        }
 
 Flow:
 Input
