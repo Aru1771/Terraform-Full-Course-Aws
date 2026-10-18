@@ -118,10 +118,10 @@ slice(["dev", "stage", "prod", "uat"], 1, 3)
 # sort() and reverse()
 
 sort(["prod", "dev", "stage"])
-# ["dev", "prod", "stage"]
+["dev", "prod", "stage"]
 
 reverse(["dev", "stage", "prod"])
-# ["prod", "stage", "dev"]
+ ["prod", "stage", "dev"]
 
 * - sort() returns values in ascending order.
 * - reverse() reverses the existing order; it does not sort the values first.
