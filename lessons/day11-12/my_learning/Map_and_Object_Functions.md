@@ -228,3 +228,103 @@ Real-world AWS DevOps use case
 Suppose your pipeline deploys Empower across three environments. Each environment has its own instance type, volume size, and tags, while all environments share common tags.
 
 Create a main.tf file:
+
+
+        variable "environment_config" {
+          type = map(object({
+            instance_type = string
+            volume_size   = number
+            tags          = map(string)
+          }))
+        
+          default = {
+            dev = {
+              instance_type = "t3.micro"
+              volume_size   = 20
+              tags = {
+                Environment = "dev"
+              }
+            }
+        
+            stage = {
+              instance_type = "t3.small"
+              volume_size   = 30
+              tags = {
+                Environment = "stage"
+              }
+            }
+        
+            prod = {
+              instance_type = "t3.large"
+              volume_size   = 50
+              tags = {
+                Environment = "prod"
+              }
+            }
+          }
+        }
+        
+        locals {
+          common_tags = {
+            Application = "Empower"
+            ManagedBy   = "Terraform"
+          }
+        
+          environment_names = keys(var.environment_config)
+        
+          instance_types = values({
+            for env, config in var.environment_config :
+            env => config.instance_type
+          })
+        
+          production_config = lookup(
+            var.environment_config,
+            "prod",
+            {
+              instance_type = "t3.micro"
+              volume_size   = 20
+              tags          = {}
+            }
+          )
+        
+          production_tags = merge(
+            local.common_tags,
+            local.production_config.tags
+          )
+        
+          environment_type_map = zipmap(
+            keys(var.environment_config),
+            local.instance_types
+          )
+        
+          optional_volume_size = try(
+            var.environment_config["prod"].volume_size,
+            20
+          )
+        }
+        
+        output "environment_names" {
+          value = local.environment_names
+        }
+        
+        output "instance_types" {
+          value = local.instance_types
+        }
+        
+        output "production_config" {
+          value = local.production_config
+        }
+        
+        output "production_tags" {
+          value = local.production_tags
+        }
+        
+        output "environment_type_map" {
+          value = local.environment_type_map
+        }
+        
+        output "optional_volume_size" {
+          value = local.optional_volume_size
+        }
+
+
